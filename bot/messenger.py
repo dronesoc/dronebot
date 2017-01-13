@@ -2,6 +2,7 @@
 
 import logging
 import random
+import fpv
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,7 @@ class Messenger(object):
         txt = '{}\n{}\n{}\n{}'.format(
             "I'm your friendly Slack bot written in Python.  I'll *_respond_* to the following commands:",
             "> `hi <@" + bot_uid + ">` - I'll respond with a randomized greeting mentioning your user. :wave:",
-            "> `<@" + bot_uid + "> joke` - I'll tell you one of my finest jokes, with a typing pause for effect. :laughing:",
-            "> `<@" + bot_uid + "> attachment` - I'll demo a post with an attachment using the Web API. :paperclip:")
+            "> `<@" + bot_uid + "> freq <band> <channel>` - I'll tell you the frequency of an FPV channel.")
         self.send_message(channel_id, txt)
 
     def write_greeting(self, channel_id, user_id):
@@ -44,6 +44,14 @@ class Messenger(object):
         answer = "To eat the chicken on the other side! :laughing:"
         self.send_message(channel_id, answer)
 
+    def get_frequency(self, channel_id, band, channel):
+        band, frequency = fpv.get_frequency(band, channel)
+        if frequency:
+            txt = '{} channel {} is on {} MHz'.format(band, channel, frequency)
+        else:
+            txt = "Sorry, I don't know that one"
+
+        self.send_message(channel_id, txt)
 
     def write_error(self, channel_id, err_msg):
         txt = ":face_with_head_bandage: my maker didn't handle this error very well:\n>```{}```".format(err_msg)
