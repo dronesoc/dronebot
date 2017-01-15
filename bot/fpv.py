@@ -19,7 +19,7 @@ def get_frequency(band, channel):
         return None
 
     channel_index = int(channel) - 1
-    if 0 < channel_index < len(frequency_table[band]):
+    if 0 <= channel_index < len(frequency_table[band]):
         return (band, frequency_table[band][channel_index])
     else:
         return None
