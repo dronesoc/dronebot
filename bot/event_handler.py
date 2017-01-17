@@ -38,6 +38,7 @@ class RtmEventHandler(object):
             msg_txt = event['text']
 
             freq_regex = re.compile('freq\s([a-zA-Z]{1,20})\s(\d)')
+            freq_assign = re.compile('assign\s([a-zA-Z]{1,20})\s(\d)')
 
             if self.clients.is_bot_mention(msg_txt) or self._is_direct_message(event['channel']):
                 # e.g. user typed: "@pybot tell me a joke!"
@@ -51,11 +52,18 @@ class RtmEventHandler(object):
                     self.msg_writer.demo_attachment(event['channel'])
                 elif 'echo' in msg_txt:
                     self.msg_writer.send_message(event['channel'], msg_txt)
+                elif 'list' in msg_txt:
+                    self.msg_writer.list_assignments(event['channel'])
                 elif freq_regex.search(msg_txt):
                     match = freq_regex.search(msg_txt)
                     band = match.group(1)
                     channel = match.group(2)
                     self.msg_writer.get_frequency(event['channel'], band, channel)
+                elif freq_assign.search(msg_txt):
+                    match = freq_assign.search(msg_txt)
+                    band = match.group(1)
+                    channel = match.group(2)
+                    self.msg_writer.assign_channel(event['channel'], event['user'], band, channel)
                 else:
                     self.msg_writer.write_prompt(event['channel'])
 

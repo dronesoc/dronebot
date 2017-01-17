@@ -23,3 +23,11 @@ def get_frequency(band, channel):
         return (band, frequency_table[band][channel_index])
     else:
         return None
+
+def format_info(band, channel, frequency):
+    text = """
+> Band: `{}`
+> Channel: `{}`
+> Frequency: `{} MHz`""".format(band, channel, frequency)
+    return text
+

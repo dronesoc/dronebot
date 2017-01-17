@@ -3,6 +3,7 @@
 import logging
 import random
 import fpv
+import persist
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +22,13 @@ class Messenger(object):
 
     def write_help_message(self, channel_id):
         bot_uid = self.clients.bot_user_id()
-        txt = '{}\n{}\n{}'.format(
-            "I'm your friendly Slack bot written in Python.  I'll *_respond_* to the following commands:",
-            "> `hi <@" + bot_uid + ">` - I'll respond with a randomized greeting mentioning your user. :wave:",
-            "> `<@" + bot_uid + "> freq [band] [channel]` - I'll tell you the frequency of an FPV channel.")
+        txt = """
+I'm your friendly Slack bot written in Python.  I'll *_respond_* to the following commands:
+> `hi <@{bot_uid}>` - I'll respond with a randomized greeting mentioning your user. :wave:
+> `<@{bot_uid}> freq [band] [channel]` - I'll tell you the frequency of an FPV channel.
+> `<@{bot_uid}> assign [band] [channel]` - I'll make a record of your FPV channel.
+> `<@{bot_uid}> list` - I'll list the current FPV channel assignments.
+        """.format(bot_uid=bot_uid)
         self.send_message(channel_id, txt)
 
     def write_greeting(self, channel_id, user_id):
@@ -49,10 +53,33 @@ class Messenger(object):
 
         if frequency_response:
             band, frequency = frequency_response
-            txt = '{} channel {} is on {} MHz.'.format(band, channel, frequency)
+            txt = fpv.format_info(band, channel, frequency)
         else:
             txt = "Sorry, I don't know that one. Are you sure you typed it correctly?"
 
+        self.send_message(channel_id, txt)
+
+    def assign_channel(self, channel_id, user_id, band, channel):
+        frequency_response = fpv.get_frequency(band, channel)
+        if frequency_response:
+            band, frequency = frequency_response
+
+            store = persist.PersistStore()
+            store.set_value(user_id, '{},{}'.format(band, channel))
+
+            txt = 'You have been assigned the following channel:\n{}'.format(fpv.format_info(band, channel, frequency))
+            self.send_message(channel_id, txt)
+
+    def list_assignments(self, channel_id):
+        store = persist.PersistStore()
+        user_ids = store.list_keys()
+        text_list = ''
+        for user_id in user_ids:
+            band, channel = store.get_value(user_id).split(',')
+            band, frequency = fpv.get_frequency(band, channel)
+            text_list += '\n>*Name: *<@{}>'.format(user_id) + fpv.format_info(band, channel, frequency)
+
+        txt = 'Here are the current channel assignments: {}'.format(text_list)
         self.send_message(channel_id, txt)
 
     def write_error(self, channel_id, err_msg):
