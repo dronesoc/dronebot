@@ -77,7 +77,7 @@ I'm your friendly Slack bot written in Python.  I'll *_respond_* to the followin
         for user_id in user_ids:
             band, channel = store.get_value(user_id).split(',')
             band, frequency = fpv.get_frequency(band, channel)
-            text_list += '\n>*Name: *<@{}>'.format(user_id) + fpv.format_info(band, channel, frequency)
+            text_list += '\n>*Name: *<@{}>'.format(user_id) + fpv.format_info(band, channel, frequency) + '\n'
 
         txt = 'Here are the current channel assignments: {}'.format(text_list)
         self.send_message(channel_id, txt)
