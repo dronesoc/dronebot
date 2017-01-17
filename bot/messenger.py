@@ -45,11 +45,13 @@ class Messenger(object):
         self.send_message(channel_id, answer)
 
     def get_frequency(self, channel_id, band, channel):
-        band, frequency = fpv.get_frequency(band, channel)
-        if frequency:
+        frequency_response = fpv.get_frequency(band, channel)
+
+        if frequency_response:
+            band, frequency = frequency_response
             txt = '{} channel {} is on {} MHz.'.format(band, channel, frequency)
         else:
-            txt = "Sorry, I don't know that one"
+            txt = "Sorry, I don't know that one. Are you sure you typed it correctly?"
 
         self.send_message(channel_id, txt)
 
